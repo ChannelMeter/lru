@@ -17,7 +17,10 @@ limitations under the License.
 // Package lru implements an LRU cache.
 package lru
 
-import "container/list"
+import (
+	"container/list"
+	"time"
+)
 
 // Cache is an LRU cache. It is not safe for concurrent access.
 type Cache struct {
@@ -37,8 +40,9 @@ type Cache struct {
 type Key interface{}
 
 type entry struct {
-	key   Key
-	value interface{}
+	key    Key
+	value  interface{}
+	access time.Time
 }
 
 // New creates a new Cache.
@@ -61,9 +65,10 @@ func (c *Cache) Add(key Key, value interface{}) {
 	if ee, ok := c.cache[key]; ok {
 		c.ll.MoveToFront(ee)
 		ee.Value.(*entry).value = value
+		ee.Value.(*entry).access = time.Now()
 		return
 	}
-	ele := c.ll.PushFront(&entry{key, value})
+	ele := c.ll.PushFront(&entry{key, value, time.Now()})
 	c.cache[key] = ele
 	if c.MaxEntries != 0 && c.ll.Len() > c.MaxEntries {
 		c.RemoveOldest()
@@ -77,6 +82,7 @@ func (c *Cache) Get(key Key) (value interface{}, ok bool) {
 	}
 	if ele, hit := c.cache[key]; hit {
 		c.ll.MoveToFront(ele)
+		ele.Value.(*entry).access = time.Now()
 		return ele.Value.(*entry).value, true
 	}
 	return
@@ -99,6 +105,20 @@ func (c *Cache) RemoveOldest() {
 	}
 	ele := c.ll.Back()
 	if ele != nil {
+		c.removeElement(ele)
+	}
+}
+
+func (c *Cache) peekOldest() *list.Element {
+	if c.cache == nil {
+		return nil
+	}
+	ele := c.ll.Back()
+	return ele
+}
+
+func (c *Cache) PruneOldest(before time.Time) {
+	for ele := c.peekOldest(); ele != nil && ele.Value.(*entry).access.Before(before); ele = c.peekOldest() {
 		c.removeElement(ele)
 	}
 }
