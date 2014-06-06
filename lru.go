@@ -29,7 +29,7 @@ type Cache struct {
 	MaxEntries int
 
 	// OnEvicted optionally specificies a callback function to be
-	// executed when an entry is purged from the cache.
+	// executed when an entr is purged from the cache.
 	OnEvicted func(key Key, value interface{})
 
 	ll    *list.List
@@ -39,10 +39,10 @@ type Cache struct {
 // A Key may be any value that is comparable. See http://golang.org/ref/spec#Comparison_operators
 type Key interface{}
 
-type entry struct {
-	key    Key
-	value  interface{}
-	access time.Time
+type Entry struct {
+	Key    Key
+	Value  interface{}
+	Access time.Time
 }
 
 // New creates a new Cache.
@@ -64,11 +64,11 @@ func (c *Cache) Add(key Key, value interface{}) {
 	}
 	if ee, ok := c.cache[key]; ok {
 		c.ll.MoveToFront(ee)
-		ee.Value.(*entry).value = value
-		ee.Value.(*entry).access = time.Now()
+		ee.Value.(*Entry).value = value
+		ee.Value.(*Entry).access = time.Now()
 		return
 	}
-	ele := c.ll.PushFront(&entry{key, value, time.Now()})
+	ele := c.ll.PushFront(&Entry{key, value, time.Now()})
 	c.cache[key] = ele
 	if c.MaxEntries != 0 && c.ll.Len() > c.MaxEntries {
 		c.RemoveOldest()
@@ -82,8 +82,8 @@ func (c *Cache) Get(key Key) (value interface{}, ok bool) {
 	}
 	if ele, hit := c.cache[key]; hit {
 		c.ll.MoveToFront(ele)
-		ele.Value.(*entry).access = time.Now()
-		return ele.Value.(*entry).value, true
+		ele.Value.(*Entry).access = time.Now()
+		return ele.Value.(*Entry).value, true
 	}
 	return
 }
@@ -118,7 +118,7 @@ func (c *Cache) peekOldest() *list.Element {
 }
 
 func (c *Cache) PruneOldest(before time.Time) {
-	for ele := c.peekOldest(); ele != nil && ele.Value.(*entry).access.Before(before); ele = c.peekOldest() {
+	for ele := c.peekOldest(); ele != nil && ele.Value.(*Entry).access.Before(before); ele = c.peekOldest() {
 		c.removeElement(ele)
 	}
 }
