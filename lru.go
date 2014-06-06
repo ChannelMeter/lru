@@ -33,7 +33,7 @@ type Cache struct {
 	OnEvicted func(key Key, value interface{})
 
 	ll    *list.List
-	cache map[interface{}]*list.Element
+	Cache map[interface{}]*list.Element
 }
 
 // A Key may be any value that is comparable. See http://golang.org/ref/spec#Comparison_operators
