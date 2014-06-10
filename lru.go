@@ -33,7 +33,7 @@ type Cache struct {
 	OnEvicted func(key Key, value interface{})
 
 	ll    *list.List
-	Cache map[interface{}]*list.Element
+	cache map[interface{}]*list.Element
 }
 
 // A Key may be any value that is comparable. See http://golang.org/ref/spec#Comparison_operators
@@ -58,6 +58,10 @@ func New(maxEntries int) *Cache {
 		ll:         list.New(),
 		cache:      make(map[interface{}]*list.Element),
 	}
+}
+
+func (c *Cache) GetCache() map[interface{}]*list.Element {
+	return c.cache
 }
 
 // Add adds a value to the cache.
