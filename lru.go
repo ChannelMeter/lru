@@ -133,7 +133,7 @@ func (c *Cache) PruneOldest(before time.Time) {
 
 func (c *Cache) removeElement(e *list.Element) {
 	c.ll.Remove(e)
-	kv := e.Value.(*entry)
+	kv := e.Value.(*Entry)
 	delete(c.cache, kv.key)
 	if c.OnEvicted != nil {
 		c.OnEvicted(kv.key, kv.value)
