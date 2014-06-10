@@ -40,9 +40,13 @@ type Cache struct {
 type Key interface{}
 
 type Entry struct {
-	Key    Key
-	Value  interface{}
-	Access time.Time
+	key    Key
+	value  interface{}
+	access time.Time
+}
+
+func (e *Entry) GetValue() interface{} {
+	return e.value
 }
 
 // New creates a new Cache.
